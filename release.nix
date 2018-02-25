@@ -63,8 +63,60 @@ let
       ipython-kernel = self.callCabal2nix "ipython-kernel" ipython-kernel-src {};
     } // displays self;
   };
+  pythonOverrides = self: super: {
+    jupyter_client = super.jupyter_client.overridePythonAttrs (old: rec {
+      pname = "jupyter_client";
+      version = "5.2.2";
+
+      src = self.fetchPypi {
+        inherit pname version;
+        sha256 = "83d5e23132f0d8f79ccd3939f53fb9fa97f88a896a85114dc48d0e86909b06c4";
+      };
+
+      checkInputs = with self; [ ipykernel ipython mock pytest ];
+      propagatedBuildInputs = with self; [traitlets jupyter_core pyzmq dateutil tornado ] ++ lib.optional isPyPy py;
+
+      checkPhase = ''
+        py.test
+      '';
+    });
+    jupyter_core = super.jupyter_core.overridePythonAttrs (old: rec {
+      pname = "jupyter_core";
+      version = "4.4.0";
+      name = "${pname}-${version}";
+
+      src = self.fetchPypi {
+        inherit pname version;
+        sha256 = "ba70754aa680300306c699790128f6fbd8c306ee5927976cbe48adacf240c0b7";
+      };
+
+      checkInputs = with self; [ pytest mock glibcLocales ];
+    });
+    notebook = super.notebook.overridePythonAttrs (old: {
+      buildInputs = old.buildInputs ++ [ nixpkgs.nodejs nixpkgs.git ];
+      preConfigure = ''
+        export HOME=$TMP
+        export NIX_SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+      '';
+      propagatedBuildInputs = old.propagatedBuildInputs ++ [ self.send2trash ];
+      src = nixpkgs.fetchFromGitHub {
+        owner  = "vaibhavsagar";
+        repo   = "notebook";
+        rev    = "bf5bd5e11caf3e67ca931a491cd73c7678bd738b";
+        sha256 = "1vb5l91cs4wpj8571724z76y3x5fh6lizn7j49jq7czv6qnnakcn";
+      };
+    });
+    terminado = super.terminado.overridePythonAttrs (old: rec {
+      version = "0.8.1";
+      src = self.fetchPypi {
+        inherit version;
+        pname = "terminado";
+        sha256 = "0yh69k6579g848rmjyllb5h75pkvgcy27r1l3yzgkf33wnnzkasm";
+      };
+    });
+  };
   ihaskellEnv = haskellPackages.ghcWithPackages (self: [ self.ihaskell ] ++ packages self);
-  jupyter = nixpkgs.python3.withPackages (ps: [ ps.jupyter ps.notebook ]);
+  jupyter = (nixpkgs.python3.override{ packageOverrides = pythonOverrides; }).withPackages (ps: [ ps.jupyter ps.notebook ]);
   ihaskellSh = cmd: extraArgs: nixpkgs.writeScriptBin "ihaskell-${cmd}" ''
     #! ${nixpkgs.stdenv.shell}
     export GHC_PACKAGE_PATH="$(echo ${ihaskellEnv}/lib/*/package.conf.d| tr ' ' ':'):$GHC_PACKAGE_PATH"
