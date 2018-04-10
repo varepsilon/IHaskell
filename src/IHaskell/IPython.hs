@@ -55,8 +55,9 @@ data KernelSpecOptions =
 defaultKernelSpecOptions :: KernelSpecOptions
 defaultKernelSpecOptions = KernelSpecOptions
   { kernelSpecGhcLibdir = GHC.Paths.libdir
-  , kernelSpecRTSOptions = ["-M3g", "-N2"]  -- Memory cap 3 GiB,
-                                            -- multithreading on two processors.
+  , kernelSpecRTSOptions = ["-M3g", "-N2", "-T"]   -- Memory cap 3 GiB,
+                                                   -- multithreading on two processors,
+                                                   -- GC statistics collection.
   , kernelSpecDebug = False
   , kernelSpecConfFile = defaultConfFile
   , kernelSpecInstallPrefix = Nothing

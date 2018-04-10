@@ -26,6 +26,7 @@ import           System.Environment (getArgs)
 import           System.Environment (setEnv)
 #endif
 import           System.Posix.Signals
+import           System.Remote.Monitoring
 import qualified Data.Map as Map
 import qualified Data.Text.Encoding as E
 import           Data.List (break, last)
@@ -72,6 +73,7 @@ consoleBanner =
 
 main :: IO ()
 main = do
+  forkServer "localhost" 8000
   args <- parseFlags <$> getArgs
   case args of
     Left errorMessage -> hPutStrLn stderr errorMessage

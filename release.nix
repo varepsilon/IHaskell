@@ -1,4 +1,4 @@
-{ compiler ? "ghc802", nixpkgs ? import <nixpkgs> {}, packages ? (_: []), rtsopts ? "-M3g -N2", systemPackages ? (_: []) }:
+{ compiler ? "ghc802", nixpkgs ? import <nixpkgs> {}, packages ? (_: []), rtsopts ? "-M3g -N2 -T", systemPackages ? (_: []) }:
 
 let
   inherit (builtins) any elem filterSource listToAttrs;
@@ -51,6 +51,19 @@ let
       haskell-src-exts  = self.haskell-src-exts_1_20_2;
       hmatrix           = self.hmatrix_0_18_2_0;
 
+      ekg               = nixpkgs.haskell.lib.doJailbreak super.ekg;
+      ekg-core          = nixpkgs.haskell.lib.doJailbreak super.ekg-core;
+      ekg-json          = nixpkgs.haskell.lib.doJailbreak super.ekg-json;
+      io-streams-haproxy = nixpkgs.haskell.lib.doJailbreak super.io-streams-haproxy;
+      threads           = nixpkgs.haskell.lib.doJailbreak super.threads;
+      snap-server       = nixpkgs.haskell.lib.overrideSrc super.snap-server {
+        src = nixpkgs.pkgs.fetchFromGitHub {
+          owner  = "snapframework";
+          repo   = "snap-server";
+          rev    = "d1848d4dcc29651f839a989ddc2d961bca4803ad";
+          sha256 = "0gmz9nmh9vpi8281srbr2p40mrjaxg59fsk94nlnvvhdsvlzx6q0";
+        };
+      };
       static-canvas     = nixpkgs.haskell.lib.doJailbreak super.static-canvas;
 
     } // displays self;

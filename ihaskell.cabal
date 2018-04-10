@@ -145,6 +145,7 @@ executable ihaskell
                        strict               >=0.3,
                        unix                 >= 2.6,
                        directory            -any,
+                       ekg                  -any,
                        ipython-kernel       >=0.7
 
   if flag(binPkgDb)
